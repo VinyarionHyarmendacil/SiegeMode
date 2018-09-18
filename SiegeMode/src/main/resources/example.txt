@@ -11,11 +11,11 @@
 
 Modes:
     CTF:
-        /siege_setmode Test ctf 5
-        /siege_addzone Test 23 75 17 2 MordorTeam
-        /siege_addzone Test 23 75 21 2 GondorTeam
+        /siege_mode Test ctf 5
+        /siege_zone Test 23 75 17 2 MordorTeam
+        /siege_zone Test 23 75 21 2 GondorTeam
     Dom:
-        /siege_setmode Test domination 1000
-        /siege_addzone Test 24 75 19 2 TheControlPoint
+        /siege_mode Test domination 1000
+        /siege_zone Test 24 75 19 2 TheControlPoint
 
 /siege_setup start Test 3333
