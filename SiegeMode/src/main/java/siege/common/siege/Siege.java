@@ -20,6 +20,9 @@ import net.minecraftforge.common.util.Constants;
 import siege.common.SiegeMode;
 import siege.common.kit.Kit;
 import siege.common.kit.KitDatabase;
+import vsiege.common.addon.AddonHooks;
+import vsiege.common.mode.Mode;
+import vsiege.common.mode.ModeDefault;
 import cpw.mods.fml.common.event.FMLInterModComms;
 
 public class Siege
@@ -295,6 +298,9 @@ public class Siege
 	
 	public boolean canBeStarted()
 	{
+		// TODO : Vinyarion's Addon start
+		if(!mode.isReady()) return false;
+		// Addon end
 		return isLocationSet && !siegeTeams.isEmpty();
 	}
 	
@@ -306,6 +312,9 @@ public class Siege
 			team.clearPlayers();
 		}
 		ticksRemaining = duration;
+		// TODO : Vinyarion's Addon start
+		mode.startSiege();
+		// Addon end
 		markDirty();
 		
 		announceActiveSiege();
@@ -353,7 +362,11 @@ public class Siege
 		int winningScore = -1;
 		for (SiegeTeam team : siegeTeams)
 		{
+			/* TODO : Vinyarion's Addon replace start
 			int score = team.getTeamKills();
+			*/
+			int score = mode.scoringMethod(this, team);
+			// Addon end
 			if (score > winningScore)
 			{
 				winningScore = score;
@@ -385,7 +398,7 @@ public class Siege
 				}
 			}
 		}
-		
+		/* TODO : Vinyarion's Addon replace start
 		if (winningTeams.size() == 1)
 		{
 			messageAllSiegePlayers("Team " + winningTeamName + " won with " + winningScore + " kills!");
@@ -394,7 +407,10 @@ public class Siege
 		{
 			messageAllSiegePlayers("Teams " + winningTeamName + " tied with " + winningScore + " kills each!");
 		}
-		
+		*/
+		boolean plural = winningTeams.size() != 1;
+		messageAllSiegePlayers((plural ? "Teams " : "Team ") + winningTeamName + (plural ? " tied with " : " won with ") + winningScore + " " + mode.object(this, winningScore != 1) + (plural ? " each!" : "!"));
+		// Addon end
 		messageAllSiegePlayers("---");
 		for (SiegeTeam team : siegeTeams)
 		{
@@ -482,7 +498,14 @@ public class Siege
 				markDirty();
 			}
 			
-			if (ticksRemaining <= 0)
+			// TODO : Vinyarion's addon start
+			boolean flag;
+			if (flag = mode.tick()) {
+				mode.preEndSiege();
+			}
+			// Addon end, but added the flag thing below
+			
+			if (ticksRemaining <= 0 || flag)
 			{
 				endSiege();
 			}
@@ -564,6 +587,10 @@ public class Siege
 		else
 		{
 			team.joinPlayer(entityplayer);
+
+			// TODO : Vinyarion's addon start
+			AddonHooks.playerJoinsSiege(entityplayer, this, team, kit);
+			// Addon end
 			
 			ChunkCoordinates teamSpawn = team.getRespawnPoint();
 			entityplayer.setPositionAndUpdate(teamSpawn.posX + 0.5D, teamSpawn.posY, teamSpawn.posZ + 0.5D);
@@ -585,6 +612,10 @@ public class Siege
 		
 		SiegeTeam team = getPlayerTeam(entityplayer);
 		team.leavePlayer(entityplayer);
+
+		// TODO : Vinyarion's addon start
+		AddonHooks.playerLeavesSiege(entityplayer, this, team);
+		// Addon end
 		
 		restoreAndClearBackupSpawnPoint(entityplayer);
 		Kit.clearPlayerInvAndKit(entityplayer);
@@ -693,6 +724,10 @@ public class Siege
 			{
 				playerData.onDeath();
 				team.addTeamDeath();
+				
+				// TODO : Vinyarion's Addon start
+				AddonHooks.playerDies(entityplayer, this, team);
+				// Addon end
 				
 				EntityPlayer killingPlayer = null;
 				Entity killer = source.getEntity();
@@ -917,6 +952,11 @@ public class Siege
 			playerTags.appendTag(playerData);
 		}
 		nbt.setTag("PlayerData", playerTags);
+		
+		// TODO : Vinyarion's addon start
+		nbt.setInteger("VinyarionAddon_Mode", mode.ordinal());
+		mode.toNBT(this, nbt);
+		// Addon end
 	}
 	
 	public void readFromNBT(NBTTagCompound nbt)
@@ -976,5 +1016,21 @@ public class Siege
 				}
 			}
 		}
+		
+		// TODO : Vinyarion's addon start
+		mode = Mode.of(nbt.getInteger("VinyarionAddon_Mode")).setSiege(this);
+		mode.fromNBT(this, nbt);
+		// Addon end
 	}
+	
+	// TODO : Vinyarion's addon start
+	public List<SiegeTeam> teams() {
+		return siegeTeams;
+	}
+	public Mode mode = new ModeDefault().setSiege(this);
+	public World world() {
+		return MinecraftServer.getServer().worldServerForDimension(dimension);
+	}
+	// Addon end
+	
 }

@@ -9,6 +9,8 @@ import net.minecraft.world.World;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.google.common.collect.ImmutableList;
+
 import siege.common.SiegeMode;
 import cpw.mods.fml.common.FMLLog;
 
@@ -109,6 +111,21 @@ public class SiegeDatabase
 			}
 		}
 	}
+	
+	// TODO : Vinyarion's Addon start
+	public static List<Siege> getSiegesForPlayer(EntityPlayer player) {
+		List<Siege> sieges = new ArrayList();
+		for (Siege siege : siegeMap.values()) {
+			if (siege.hasPlayer(player)) {
+				sieges.add(siege);
+			}
+		}
+		return sieges;
+	}
+	public static Collection<Siege> getAllSieges() {
+		return ImmutableList.copyOf(siegeMap.values());
+	}
+	// Addon end
 	
 	public static Siege getActiveSiegeForPlayer(EntityPlayer entityplayer)
 	{

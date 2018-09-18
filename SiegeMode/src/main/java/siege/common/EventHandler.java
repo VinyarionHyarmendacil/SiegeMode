@@ -107,6 +107,9 @@ public class EventHandler
 			{
 				activeSiege.onPlayerLogin((EntityPlayerMP)entityplayer);
 			}
+			// TODO : Vinyarion's addon start
+			vsiege.common.addon.AddonHooks.playerLogsIn(entityplayer, activeSiege);
+			// Addon end
 		}
 	}
 	
@@ -123,6 +126,9 @@ public class EventHandler
 			{
 				activeSiege.onPlayerLogout((EntityPlayerMP)entityplayer);
 			}
+			// TODO : Vinyarion's addon start
+			vsiege.common.addon.AddonHooks.playerLogsOut(entityplayer, activeSiege);
+			// Addon end
 		}
 	}
 	

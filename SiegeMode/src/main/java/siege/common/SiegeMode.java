@@ -9,6 +9,10 @@ import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.MinecraftForge;
 import siege.common.kit.*;
 import siege.common.siege.*;
+import vsiege.common.addon.CommandSiegeZone;
+import vsiege.common.addon.CommandSiegeList;
+import vsiege.common.addon.CommandSiegeMode;
+import vsiege.common.addon.CommandSiegeRule;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
@@ -17,7 +21,8 @@ import cpw.mods.fml.common.event.FMLServerStartingEvent;
 @Mod(modid = "siegemode", version = "1.0", acceptableRemoteVersions = "*")
 public class SiegeMode
 {
-	@Mod.Instance
+	// TODO : modid
+	@Mod.Instance("siegemode")
 	public static SiegeMode instance;
 	
 	private EventHandler eventHandler;
@@ -38,6 +43,12 @@ public class SiegeMode
 		event.registerServerCommand(new CommandKit());
 		event.registerServerCommand(new CommandSiegeSetup());
 		event.registerServerCommand(new CommandSiegePlay());
+		// TODO : Vinyarion's Addon start
+		event.registerServerCommand(new CommandSiegeMode());
+		event.registerServerCommand(new CommandSiegeZone());
+		event.registerServerCommand(new CommandSiegeList());
+		event.registerServerCommand(new CommandSiegeRule());
+		// Addon end
 	}
 	
 	public static File getSiegeRootDirectory()

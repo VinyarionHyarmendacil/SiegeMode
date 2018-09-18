@@ -1,0 +1,21 @@
+/siege_setup new Test
+/siege_setup edit Test setcoords ~ ~ 30
+/siege_setup edit Test teams new MordorTeam
+/siege_setup edit Test teams new GondorTeam
+/siege_kit new MordorKit
+/siege_kit new GondorKit
+/siege_setup edit Test teams edit MordorTeam setspawn ~ ~ ~
+/siege_setup edit Test teams edit GondorTeam setspawn ~ ~ ~
+/siege_setup edit Test teams edit MordorTeam kit-add MordorKit
+/siege_setup edit Test teams edit GondorTeam kit-add GondorKit
+
+Modes:
+    CTF:
+        /siege_setmode Test ctf 5
+        /siege_addzone Test 23 75 17 2 MordorTeam
+        /siege_addzone Test 23 75 21 2 GondorTeam
+    Dom:
+        /siege_setmode Test domination 1000
+        /siege_addzone Test 24 75 19 2 TheControlPoint
+
+/siege_setup start Test 3333

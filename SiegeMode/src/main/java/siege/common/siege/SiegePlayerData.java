@@ -11,6 +11,7 @@ import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.world.World;
 import siege.common.kit.Kit;
 import siege.common.kit.KitDatabase;
+import vsiege.common.addon.AddonPlayerData;
 
 public class SiegePlayerData
 {
@@ -28,6 +29,9 @@ public class SiegePlayerData
 	private int longestKillstreak;
 	
 	private ScoreObjective lastSentSiegeObjective = null;
+	// TODO : Vinyarion's Addon start
+	public final AddonPlayerData addonData = new AddonPlayerData(this, theSiege);
+	// Addon end
 
 	public SiegePlayerData(Siege siege)
 	{
@@ -67,6 +71,9 @@ public class SiegePlayerData
 		nbt.setInteger("Deaths", deaths);
 		nbt.setInteger("Killstreak", killstreak);
 		nbt.setInteger("LongestKillstreak", longestKillstreak);
+		// TODO : Vinyarion's Addon start
+		addonData.toNBT(nbt);
+		// Addon end
 	}
 	
 	public void readFromNBT(NBTTagCompound nbt)
@@ -101,6 +108,9 @@ public class SiegePlayerData
 		deaths = nbt.getInteger("Deaths");
 		killstreak = nbt.getInteger("Killstreak");
 		longestKillstreak = nbt.getInteger("LongestKillstreak");
+		// TODO : Vinyarion's Addon start
+		addonData.fromNBT(nbt);
+		// Addon end
 	}
 	
 	public BackupSpawnPoint getBackupSpawnPoint()
@@ -269,6 +279,10 @@ public class SiegePlayerData
 			allSiegeStats.add(null);
 			allSiegeStats.add(new Score(scoreboard, siegeObjective, "Team K: " + team.getTeamKills()));
 			allSiegeStats.add(new Score(scoreboard, siegeObjective, "Team D: " + team.getTeamDeaths()));
+			
+			// TODO : Vinyarion's addon start
+			theSiege.mode.scoreboard(allSiegeStats, scoreboard, siegeObjective, timeRemaining, team, entityplayer, this);
+			// Addon end
 			
 			// recreate the siege objective (or create for first time if not sent before)
 			Packet pktObjective = new S3BPacketScoreboardObjective(siegeObjective, 0);

@@ -271,8 +271,20 @@ public class SiegeTeam
 		theSiege.markDirty();
 	}
 	
+	// TODO : Vinyarion's addon start
+	public int score = 0;
+	public int antiscore = 0;
+	public Siege getSiege() {
+		return this.theSiege;
+	}
+	// Addon end
+	
 	public String getSiegeOngoingScore()
 	{
+		// TODO : Vinyarion's addon start
+		String moddedScore = theSiege.mode.score(theSiege.world(), theSiege, this);
+		if (moddedScore != null) return moddedScore;
+		// Addon end
 		return teamName + ": Kills: " + teamKills;
 	}
 	
@@ -298,6 +310,9 @@ public class SiegeTeam
 		}
 		
 		String message = teamName + ": Kills: " + teamKills + ", Deaths: " + teamDeaths;
+		// TODO : Vinyarion's addon start
+		message = theSiege.mode.endMessage(theSiege, this, message);
+		// Addon end
 		if (mvpID != null)
 		{
 			String mvp = UsernameCache.getLastKnownUsername(mvpID);
@@ -350,6 +365,9 @@ public class SiegeTeam
 		
 		nbt.setInteger("Kills", teamKills);
 		nbt.setInteger("Deaths", teamDeaths);
+		// TODO : Vinyarion's addon start
+		nbt.setInteger("VinyarionAddon_Score", score);
+		// Addon end
 	}
 	
 	public void readFromNBT(NBTTagCompound nbt)
@@ -411,5 +429,8 @@ public class SiegeTeam
 		
 		teamKills = nbt.getInteger("Kills");
 		teamDeaths = nbt.getInteger("Deaths");
+		// TODO : Vinyarion's addon start
+		score = nbt.getInteger("VinyarionAddon_Score");
+		// Addon end
 	}
 }

@@ -7,6 +7,7 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.MathHelper;
 import siege.common.kit.Kit;
 import siege.common.kit.KitDatabase;
+import vsiege.common.mode.ModeDefault;
 
 public class CommandSiegeSetup extends CommandBase
 {
@@ -365,7 +366,10 @@ public class CommandSiegeSetup extends CommandBase
 					}
 					else if (!siege.canBeStarted())
 					{
-						throw new CommandException("Siege %s cannot be started - it requires a location and at least one team", siegeName);
+						// TODO : Vinyarion's Addon start
+						throw siege.mode.generateException();
+						// throw new CommandException("Siege %s cannot be started - it requires a location and at least one team", siegeName);
+						// Addon end
 					}
 					
 					if (args.length >= 3)
