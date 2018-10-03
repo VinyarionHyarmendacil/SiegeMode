@@ -15,12 +15,15 @@ import net.minecraft.potion.PotionEffect;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.*;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.UsernameCache;
 import net.minecraftforge.common.util.Constants;
 import siege.common.SiegeMode;
 import siege.common.kit.Kit;
 import siege.common.kit.KitDatabase;
 import vsiege.common.addon.AddonHooks;
+import vsiege.common.addon.AddonPlayerData;
+import vsiege.common.addon.AddonTeleporter;
 import vsiege.common.mode.Mode;
 import vsiege.common.mode.ModeDefault;
 import cpw.mods.fml.common.event.FMLInterModComms;
@@ -384,7 +387,7 @@ public class Siege
 			if (winningTeams.size() == 1)
 			{
 				SiegeTeam team = winningTeams.get(0);
-				winningTeamName = team.getTeamName();
+				winningTeamName = team.color + team.getTeamName();
 			}
 			else
 			{
@@ -392,9 +395,9 @@ public class Siege
 				{
 					if (!winningTeamName.isEmpty())
 					{
-						winningTeamName += ", ";
+						winningTeamName += EnumChatFormatting.RED + ", ";
 					}
-					winningTeamName += team.getTeamName();
+					winningTeamName += team.color + team.getTeamName();
 				}
 			}
 		}
@@ -409,7 +412,7 @@ public class Siege
 		}
 		*/
 		boolean plural = winningTeams.size() != 1;
-		messageAllSiegePlayers((plural ? "Teams " : "Team ") + winningTeamName + (plural ? " tied with " : " won with ") + winningScore + " " + mode.object(this, winningScore != 1) + (plural ? " each!" : "!"));
+		messageAllSiegePlayers((plural ? "Teams " : "Team ") + winningTeamName + EnumChatFormatting.RED + (plural ? " tied with " : " won with ") + winningScore + " " + mode.object(this, winningScore != 1) + (plural ? " each!" : "!"));
 		// Addon end
 		messageAllSiegePlayers("---");
 		for (SiegeTeam team : siegeTeams)
@@ -418,7 +421,9 @@ public class Siege
 			messageAllSiegePlayers(teamMsg);
 		}
 		messageAllSiegePlayers("---");
-		
+		// TODO : Vinyarion's addon start
+		if(mode instanceof ModeDefault) {
+		// Addon end
 		UUID mvpID = null;
 		int mvpKills = 0;
 		int mvpDeaths = 0;
@@ -460,10 +465,16 @@ public class Siege
 			String streakPlayer = UsernameCache.getLastKnownUsername(longestKillstreakID);
 			messageAllSiegePlayers("Longest killstreak was " + streakPlayer + " (" + getPlayerTeam(longestKillstreakID).getTeamName() + ") with a killstreak of " + longestKillstreak);
 		}
+		// TODO : Vinyarion's addon start
+		} else {
+			mode.printMVP(this, siegeTeams);
+		}
+		// Addon end
 		messageAllSiegePlayers("---");
-		
-		messageAllSiegePlayers("Congratulations to " + winningTeamName + ", and well played by all!");
-		
+		// TODO : Vinyarion's Addon start
+		// messageAllSiegePlayers("Congratulations to " + winningTeamName + ", and well played by all!");
+		messageAllSiegePlayers("Congratulations to " + winningTeamName + EnumChatFormatting.RED + ", and well played by all!");
+		// Addon end
 		List playerList = MinecraftServer.getServer().getConfigurationManager().playerEntityList;
 		for (Object player : playerList)
 		{
@@ -756,7 +767,7 @@ public class Siege
 						int killstreak = killingPlayerData.getKillstreak();
 						if (killstreak >= KILLSTREAK_ANNOUNCE)
 						{
-							messageAllSiegePlayers(killingPlayer.getCommandSenderName() + " (" + killingTeam.getTeamName() + ") has a killstreak of " + killstreak + "!");
+							messageAllSiegePlayers(killingPlayer.getCommandSenderName() + " (" + killingTeam.color + killingTeam.getTeamName() + EnumChatFormatting.RED + ") has a killstreak of " + killstreak + "!");
 						}
 					}
 				}
@@ -858,6 +869,19 @@ public class Siege
 		{
 			entityplayer.setPositionAndUpdate(spawnCoords.posX + 0.5D, spawnCoords.posY + 0.5D, spawnCoords.posZ + 0.5D);
 		}
+		// TODO : Vinyarion's Addon start
+		SiegePlayerData spd = AddonHooks.lastLeft.get();
+		if(spd != null) {
+			int todim = spd.addonData.joinedSiegeDim;
+			double[] topos = spd.addonData.joinedSiegePos;
+			if(entityplayer.dimension != todim) {
+				MinecraftServer.getServer().getConfigurationManager().transferPlayerToDimension((EntityPlayerMP)entityplayer, todim, new AddonTeleporter((WorldServer)entityplayer.worldObj));
+			}
+			entityplayer.setPositionAndUpdate(topos[0], topos[1], topos[2]);
+		}
+		entityplayer.getEntityData().removeTag("VinyarionAddon_Flag");
+		AddonHooks.lastLeft.remove();
+		// Addon end
 	}
 	
 	public void onPlayerLogin(EntityPlayerMP entityplayer)

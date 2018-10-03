@@ -213,12 +213,12 @@ public class CommandSiegePlay extends CommandBase
 							else
 							{
 								int limit = team.getKitLimit(kit);
-								throw new CommandException("Kit %s is limited to %s players in team %s! Try another kit", kitName, String.valueOf(limit), teamName);
+								throw new CommandException("Kit %s is limited to %s players in team %s! Try another kit", kitName, String.valueOf(limit), team.color + teamName);
 							}
 						}
 						else
 						{
-							throw new CommandException("Cannot switch to kit %s: no such kit exists on team %s!", kitName, teamName);
+							throw new CommandException("Cannot switch to kit %s: no such kit exists on team %s!", kitName, team.color + teamName);
 						}
 					}
 				}

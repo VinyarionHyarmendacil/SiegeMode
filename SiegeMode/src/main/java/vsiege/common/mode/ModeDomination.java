@@ -1,6 +1,7 @@
 package vsiege.common.mode;
 
 import java.util.List;
+import java.util.UUID;
 
 import com.google.common.collect.Lists;
 
@@ -11,8 +12,10 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.scoreboard.Score;
 import net.minecraft.scoreboard.ScoreObjective;
 import net.minecraft.scoreboard.Scoreboard;
+import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
+import net.minecraftforge.common.UsernameCache;
 import net.minecraftforge.common.util.Constants.NBT;
 import siege.common.siege.Siege;
 import siege.common.siege.SiegePlayerData;
@@ -40,7 +43,7 @@ public class ModeDomination extends Mode {
 	}
 
 	public String score(World world, Siege siege, SiegeTeam team) {
-		return team.getTeamName() + ": Score: " + team.score;
+		return team.color + team.getTeamName() + ": Score: " + team.score;
 	}
 
 	public boolean isReady() {
@@ -70,7 +73,7 @@ public class ModeDomination extends Mode {
 	}
 
 	public String endMessage(Siege siege, SiegeTeam team, String message) {
-		return message + ", Points: " + team.score;
+		return super.endMessage(siege, team, message) + ", Points: " + team.score;
 	}
 
 	protected String object() {
@@ -84,6 +87,42 @@ public class ModeDomination extends Mode {
 			if(zone.box.intersectsWith(entityplayer.boundingBox) && team.getTeamName().equals(zone.attackers.getTeamName())) {
 				list.add(new Score(board, objective, "Progress: " + String.valueOf(MathHelper.floor_double((double)zone.ticksHeld / (double)zone.ticksTillOccupation))));
 			}
+		}
+	}
+	
+	public void printMVP(Siege siege2, List<SiegeTeam> siegeTeams) {
+		UUID mvpID = null;
+		int mvpKills = 0;
+		int mvpDeaths = 0;
+		int mvpScore = Integer.MIN_VALUE;
+		UUID longestKillstreakID = null;
+		int longestKillstreak = 0;
+		for (SiegeTeam team : siegeTeams) {
+			for (UUID player : team.getPlayerList()) {
+				SiegePlayerData playerData = siege.getPlayerData(player);
+				int kills = playerData.getKills();
+				int deaths = playerData.getDeaths();
+				int score = playerData.addonData.personalscore;
+				if (score > mvpScore || (score == mvpScore && deaths < mvpDeaths)) {
+					mvpID = player;
+					mvpKills = kills;
+					mvpDeaths = deaths;
+					mvpScore = score;
+				}
+				int streak = playerData.getLongestKillstreak();
+				if (streak > longestKillstreak) {
+					longestKillstreakID = player;
+					longestKillstreak = streak;
+				}
+			}
+		}
+		if (mvpID != null) {
+			String mvp = UsernameCache.getLastKnownUsername(mvpID);
+			AddonHooks.messageAllSiegePlayers(siege, "MVP was " + mvp + " (" + siege.getPlayerTeam(mvpID).getTeamName() + ") with " + mvpKills + " kills / " + mvpDeaths + " deaths / " + mvpScore + " occupation points");
+		}
+		if (longestKillstreakID != null) {
+			String streakPlayer = UsernameCache.getLastKnownUsername(longestKillstreakID);
+			AddonHooks.messageAllSiegePlayers(siege, "Longest killstreak was " + streakPlayer + " (" + siege.getPlayerTeam(longestKillstreakID).getTeamName() + ") with a killstreak of " + longestKillstreak);
 		}
 	}
 	

@@ -6,6 +6,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.*;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChunkCoordinates;
+import net.minecraft.util.EnumChatFormatting;
 import net.minecraftforge.common.UsernameCache;
 import net.minecraftforge.common.util.Constants;
 import siege.common.kit.Kit;
@@ -273,6 +274,7 @@ public class SiegeTeam
 	
 	// TODO : Vinyarion's addon start
 	public int score = 0;
+	public EnumChatFormatting color = EnumChatFormatting.WHITE;
 	public int antiscore = 0;
 	public Siege getSiege() {
 		return this.theSiege;
@@ -367,6 +369,7 @@ public class SiegeTeam
 		nbt.setInteger("Deaths", teamDeaths);
 		// TODO : Vinyarion's addon start
 		nbt.setInteger("VinyarionAddon_Score", score);
+		nbt.setInteger("VinyarionAddon_Color", color.ordinal());
 		// Addon end
 	}
 	
@@ -431,6 +434,8 @@ public class SiegeTeam
 		teamDeaths = nbt.getInteger("Deaths");
 		// TODO : Vinyarion's addon start
 		score = nbt.getInteger("VinyarionAddon_Score");
+		int c = nbt.getInteger("VinyarionAddon_Color");
+		color = EnumChatFormatting.values()[c < EnumChatFormatting.values().length ? c >= 0 ? c : 0 : 0];
 		// Addon end
 	}
 }

@@ -11,6 +11,7 @@ public class AddonPlayerData {
 	public boolean isSiegeActive = false;
 	public double[] joinedSiegePos = new double[3];
 	public int joinedSiegeDim = 0;
+	public int personalscore = 0;
 	
 	public AddonPlayerData(SiegePlayerData parent, Siege siege) {
 		this.parent = parent;
@@ -23,6 +24,7 @@ public class AddonPlayerData {
 		nbt.setDouble("VinyarionAddon_JoinedSiegePosY", this.joinedSiegePos[1]);
 		nbt.setDouble("VinyarionAddon_JoinedSiegePosZ", this.joinedSiegePos[2]);
 		nbt.setInteger("VinyarionAddon_JoinedSiegePosDim", this.joinedSiegeDim);
+		nbt.setInteger("VinyarionAddon_PersonalScore", this.personalscore);
 	}
 	
 	public void fromNBT(NBTTagCompound nbt) {
@@ -33,6 +35,7 @@ public class AddonPlayerData {
 			nbt.getDouble("VinyarionAddon_JoinedSiegePosZ")
 		};
 		this.joinedSiegeDim = nbt.getInteger("VinyarionAddon_JoinedSiegePosDim");
+		this.personalscore = nbt.getInteger("VinyarionAddon_PersonalScore");
 	}
 	
 }

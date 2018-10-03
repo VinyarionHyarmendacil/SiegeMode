@@ -270,7 +270,7 @@ public class SiegePlayerData
 			List<Score> allSiegeStats = new ArrayList();
 			allSiegeStats.add(new Score(scoreboard, siegeObjective, timeRemaining));
 			allSiegeStats.add(null);
-			allSiegeStats.add(new Score(scoreboard, siegeObjective, "Team: " + team.getTeamName()));
+			allSiegeStats.add(new Score(scoreboard, siegeObjective, "Team: " + team.color + team.getTeamName()));
 			allSiegeStats.add(new Score(scoreboard, siegeObjective, "Kit: " + kitName));
 			allSiegeStats.add(null);
 			allSiegeStats.add(new Score(scoreboard, siegeObjective, "Kills: " + getKills()));

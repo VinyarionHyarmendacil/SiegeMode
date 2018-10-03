@@ -13,12 +13,13 @@ import vsiege.common.addon.CommandSiegeZone;
 import vsiege.common.addon.CommandSiegeList;
 import vsiege.common.addon.CommandSiegeMode;
 import vsiege.common.addon.CommandSiegeRule;
+import vsiege.common.addon.CommandSiegeTeamColor;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
 
-@Mod(modid = "siegemode", version = "1.0", acceptableRemoteVersions = "*")
+@Mod(modid = "siegemode", version = "V.1.7", acceptableRemoteVersions = "*")
 public class SiegeMode
 {
 	// TODO : modid
@@ -48,6 +49,7 @@ public class SiegeMode
 		event.registerServerCommand(new CommandSiegeZone());
 		event.registerServerCommand(new CommandSiegeList());
 		event.registerServerCommand(new CommandSiegeRule());
+		event.registerServerCommand(new CommandSiegeTeamColor());
 		// Addon end
 	}
 	

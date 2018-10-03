@@ -7,6 +7,7 @@ import com.google.common.collect.Lists;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
+import static net.minecraft.util.EnumChatFormatting.*;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.AxisAlignedBB;
@@ -14,6 +15,7 @@ import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.world.World;
 import siege.common.siege.Siege;
 import siege.common.siege.SiegeDatabase;
+import siege.common.siege.SiegePlayerData;
 import siege.common.siege.SiegeTeam;
 import vsiege.common.addon.AddonHooks;
 
@@ -41,8 +43,8 @@ public class ZoneControl extends Zone {
 
 	protected void toNBT0(NBTTagCompound nbt) {
 		nbt.setString("name", name);
-		nbt.setString("occupiers", occupiers == null ? "" : occupiers.getTeamName());
-		nbt.setString("attackers", attackers == null ? "" : attackers.getTeamName());
+		nbt.setString("occupiers", occupiers == null ? "" : (occupiers.color + occupiers.getTeamName()));
+		nbt.setString("attackers", attackers == null ? "" : (attackers.color + attackers.getTeamName()));
 		nbt.setInteger("ticksHeld", ticksHeld);
 	}
 
@@ -74,8 +76,16 @@ public class ZoneControl extends Zone {
 				attackers = null;
 			} else if(highs.get(0) == attackers) {
 				ticksHeld++;
+				boolean captured = false;
 				if(ticksHeld >= ticksTillOccupation) {
 					occupied(attackers);
+					captured = true;
+				}
+				for(Object o : siege.world().getEntitiesWithinAABB(EntityPlayer.class, box)) {
+					EntityPlayer player = (EntityPlayer)o;
+					if(siege.getPlayerTeam(player) == attackers) {
+						siege.getPlayerData(player).addonData.personalscore += (captured ? 20 : 1);
+					}
 				}
 			} else {
 				ticksHeld = 0;
@@ -88,12 +98,12 @@ public class ZoneControl extends Zone {
 	}
 
 	private void attacked(SiegeTeam team) {
-		AddonHooks.messageAllSiegePlayers(siege, EnumChatFormatting.AQUA + team.getTeamName() + " is attacking " + name + "!");
+		AddonHooks.messageAllSiegePlayers(siege, team.color + team.getTeamName() + GOLD + " is attacking " + WHITE + name + GOLD + "!");
 		attackers = team;
 	}
 
 	private void occupied(SiegeTeam team) {
-		AddonHooks.messageAllSiegePlayers(siege, EnumChatFormatting.AQUA + team.getTeamName() + " has taken " + name + "!");
+		AddonHooks.messageAllSiegePlayers(siege, team.color + team.getTeamName() + GOLD + " has taken " + WHITE + name + GOLD + "!");
 		occupiers = team;
 		attackers = null;
 	}

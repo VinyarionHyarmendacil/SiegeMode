@@ -2,7 +2,7 @@ package vsiege.common.game;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.EnumChatFormatting;
+import static net.minecraft.util.EnumChatFormatting.*;
 import net.minecraft.world.World;
 import siege.common.siege.Siege;
 import siege.common.siege.SiegeDatabase;
@@ -40,11 +40,12 @@ public class ZoneFlag extends Zone {
 	}
 
 	private void captureFlag(ModeCTF mode, EntityPlayer player, SiegeTeam winner, SiegeTeam loser) {
-		AddonHooks.messageAllSiegePlayers(siege, EnumChatFormatting.GOLD + winner.getTeamName() + " has captured the flag of " + loser.getTeamName() + "!");
+		AddonHooks.messageAllSiegePlayers(siege, winner.color + winner.getTeamName() + GOLD + " has captured the flag of " + loser.color + loser.getTeamName() + GOLD + "!");
 		player.getEntityData().removeTag("VinyarionAddon_Flag");
 		mode.owners.get(loser).hasFlag = true;
 		winner.score++;
 		loser.antiscore++;
+		siege.getPlayerData(player).addonData.personalscore++;
 		siege.markDirty();
 	}
 
@@ -53,10 +54,10 @@ public class ZoneFlag extends Zone {
 		player.getEntityData().setString("VinyarionAddon_Flag", owner.getTeamName());
 		if(team != null) {
 			mode.owners.get(team).hasFlag = true;
-			AddonHooks.messageAllSiegePlayers(siege, EnumChatFormatting.GOLD + player.getCommandSenderName() + " has dropped the flag of " + team.getTeamName() + "!");
+			AddonHooks.messageAllSiegePlayers(siege, YELLOW + player.getCommandSenderName() + GOLD + " has dropped the flag of " + team.color + team.getTeamName() + GOLD + "!");
 		}
 		hasFlag = false;
-		AddonHooks.messageAllSiegePlayers(siege, EnumChatFormatting.GOLD + player.getCommandSenderName() + " has picked up the flag of " + owner.getTeamName() + "!");
+		AddonHooks.messageAllSiegePlayers(siege, YELLOW + player.getCommandSenderName() + GOLD + " has picked up the flag of " + owner.color + owner.getTeamName() + GOLD + "!");
 		siege.markDirty();
 	}
 
@@ -65,7 +66,7 @@ public class ZoneFlag extends Zone {
 		player.getEntityData().removeTag("VinyarionAddon_Flag");
 		if(team != null) {
 			mode.owners.get(team).hasFlag = true;
-			AddonHooks.messageAllSiegePlayers(siege, EnumChatFormatting.GOLD + player.getCommandSenderName() + " has dropped the flag of " + team.getTeamName() + "!");
+			AddonHooks.messageAllSiegePlayers(siege, YELLOW + player.getCommandSenderName() + GOLD + " has dropped the flag of " + team.color + team.getTeamName() + GOLD + "!");
 		}
 		siege.markDirty();
 	}

@@ -12,6 +12,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.scoreboard.Score;
 import net.minecraft.scoreboard.ScoreObjective;
 import net.minecraft.scoreboard.Scoreboard;
+import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants.NBT;
 import siege.common.siege.Siege;
@@ -88,8 +89,12 @@ public abstract class Mode {
 	
 	public void preEndSiege() {}
 	
+	public void printMVP(Siege siege2, List<SiegeTeam> siegeTeams) {
+		
+	}
+	
 	public String endMessage(Siege siege, SiegeTeam team, String message) {
-		return message;
+		return team.color + team.getTeamName() + EnumChatFormatting.RED + ": Kills: " + team.getTeamKills() + ", Deaths: " + team.getTeamDeaths();
 	}
 	
 	public String object(Siege siege, boolean plural) {

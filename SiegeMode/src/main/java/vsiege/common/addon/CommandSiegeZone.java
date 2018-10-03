@@ -58,6 +58,12 @@ public class CommandSiegeZone extends CommandBase {
 				}
 			} else if(op.equals("add")) {
 				if(args.length < 7) throw new CommandException("Not enough arguments! Missing coordinates and size.");
+				for(ZoneFlag zf : ctf.zones.toArray(new ZoneFlag[ctf.zones.size()])) {
+					if(zf.owner.getTeamName().equals(team.getTeamName())) {
+						ctf.owners.remove(zf.owner);
+						ctf.zones.remove(zf);
+					}
+				}
 				int x = parseInt(sender, args[3]);
 				int y = parseInt(sender, args[4]);
 				int z = parseInt(sender, args[5]);

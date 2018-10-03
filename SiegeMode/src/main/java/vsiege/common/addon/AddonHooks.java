@@ -1,17 +1,22 @@
 package vsiege.common.addon;
 
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 import cpw.mods.fml.relauncher.ReflectionHelper;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import siege.common.kit.Kit;
+import siege.common.siege.BackupSpawnPoint;
 import siege.common.siege.Siege;
+import siege.common.siege.SiegePlayerData;
 import siege.common.siege.SiegeTeam;
 import vsiege.common.game.ZoneFlag;
 import vsiege.common.mode.ModeCTF;
 
 public class AddonHooks {
+
+	public static ThreadLocal<SiegePlayerData> lastLeft = ThreadLocal.withInitial(()->null);
 
 	public static void playerJoinsSiege(EntityPlayer player, Siege siege, SiegeTeam team, Kit kit) {
 		if(siege == null) return;
@@ -24,6 +29,7 @@ public class AddonHooks {
 
 	public static void playerLeavesSiege(EntityPlayerMP player, Siege siege, SiegeTeam team) {
 		if(siege == null) return;
+		lastLeft.set(siege.getPlayerData(player));
 		siege.mode.ruleHandler.playerLeave(siege, player);
 	}
 
@@ -46,10 +52,11 @@ public class AddonHooks {
 		siege.mode.ruleHandler.playerLogout(siege, player);
 	}
 
+	private static final Method masp = ReflectionHelper.findMethod(Siege.class, null, new String[]{"messageAllSiegePlayers"}, String.class);
 	public static void messageAllSiegePlayers(Siege siege, String text) {
 		if(siege == null) return;
 		try {
-			ReflectionHelper.findMethod(Siege.class, siege, new String[]{"messageAllSiegePlayers"}, String.class).invoke(siege, text);
+			masp.invoke(siege, text);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

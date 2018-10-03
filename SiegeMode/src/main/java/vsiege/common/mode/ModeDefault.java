@@ -18,7 +18,7 @@ public class ModeDefault extends Mode {
 	}
 
 	public String score(World world, Siege siege, SiegeTeam team) {
-		return null;
+		return team.color + team.getTeamName() + ": Kills: " + team.getTeamKills();
 	}
 
 	protected void fromNBT0(Siege siege, NBTTagCompound nbt) {
