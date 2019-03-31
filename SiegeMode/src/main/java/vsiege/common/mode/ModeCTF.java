@@ -48,7 +48,7 @@ public class ModeCTF extends Mode {
 	}
 
 	public String score(World world, Siege siege, SiegeTeam team) {
-		return team.color + team.getTeamName() + ": Captured flags: " + team.score;
+		return team.color + team.getTeamName() + EnumChatFormatting.GOLD + ": Captured flags: " + team.score;
 	}
 
 	protected void fromNBT0(Siege siege, NBTTagCompound nbt) {
@@ -130,6 +130,9 @@ public class ModeCTF extends Mode {
 	public void startSiege() {
 		for(SiegeTeam team : siege.teams()) {
 			team.score = team.antiscore = 0;
+		}
+		for(ZoneFlag zone : zones) {
+			zone.hasFlag = true;
 		}
 	}
 

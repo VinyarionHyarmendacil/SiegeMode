@@ -43,7 +43,7 @@ public class ModeDomination extends Mode {
 	}
 
 	public String score(World world, Siege siege, SiegeTeam team) {
-		return team.color + team.getTeamName() + ": Score: " + team.score;
+		return team.color + team.getTeamName() + EnumChatFormatting.GOLD + ": Score: " + team.score;
 	}
 
 	public boolean isReady() {

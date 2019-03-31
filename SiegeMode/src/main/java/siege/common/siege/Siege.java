@@ -1,8 +1,15 @@
 package siege.common.siege;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.UUID;
 
+import cpw.mods.fml.common.event.FMLInterModComms;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
@@ -13,7 +20,12 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.*;
+import net.minecraft.util.ChatComponentText;
+import net.minecraft.util.ChunkCoordinates;
+import net.minecraft.util.DamageSource;
+import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.util.IChatComponent;
+import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.UsernameCache;
@@ -22,11 +34,9 @@ import siege.common.SiegeMode;
 import siege.common.kit.Kit;
 import siege.common.kit.KitDatabase;
 import vsiege.common.addon.AddonHooks;
-import vsiege.common.addon.AddonPlayerData;
 import vsiege.common.addon.AddonTeleporter;
 import vsiege.common.mode.Mode;
 import vsiege.common.mode.ModeDefault;
-import cpw.mods.fml.common.event.FMLInterModComms;
 
 public class Siege
 {
@@ -198,6 +208,9 @@ public class Siege
 		{
 			data = new SiegePlayerData(this);
 			playerDataMap.put(player, data);
+			// TODO : Vinyarion's Addon start
+			shadowPlayerDataMap.put(player, data);
+			// Addon end
 		}
 		return data;
 	}
@@ -626,6 +639,7 @@ public class Siege
 
 		// TODO : Vinyarion's addon start
 		AddonHooks.playerLeavesSiege(entityplayer, this, team);
+		// TODO : Unnecessary. // shadowPlayerDataMap.put(entityplayer.getUniqueID(), playerDataMap.get(entityplayer.getUniqueID()));
 		// Addon end
 		
 		restoreAndClearBackupSpawnPoint(entityplayer);
@@ -864,11 +878,6 @@ public class Siege
 	
 	public static void dispel(EntityPlayer entityplayer)
 	{
-		ChunkCoordinates spawnCoords = entityplayer.worldObj.getSpawnPoint();
-		if (spawnCoords != null)
-		{
-			entityplayer.setPositionAndUpdate(spawnCoords.posX + 0.5D, spawnCoords.posY + 0.5D, spawnCoords.posZ + 0.5D);
-		}
 		// TODO : Vinyarion's Addon start
 		SiegePlayerData spd = AddonHooks.lastLeft.get();
 		if(spd != null) {
@@ -878,6 +887,17 @@ public class Siege
 				MinecraftServer.getServer().getConfigurationManager().transferPlayerToDimension((EntityPlayerMP)entityplayer, todim, new AddonTeleporter((WorldServer)entityplayer.worldObj));
 			}
 			entityplayer.setPositionAndUpdate(topos[0], topos[1], topos[2]);
+		} else {
+		// Addon end
+		ChunkCoordinates spawnCoords = entityplayer.worldObj.getSpawnPoint();
+		if (spawnCoords != null)
+		{
+			entityplayer.setPositionAndUpdate(spawnCoords.posX + 0.5D, spawnCoords.posY + 0.5D, spawnCoords.posZ + 0.5D);
+		}
+		// TODO : Vinyarion's Addon start
+		else {
+			entityplayer.addChatMessage(new ChatComponentText("Sorry, but we couldn't manage to get your last location. Ask a staff member to teleport you to your previous location."));
+		}
 		}
 		entityplayer.getEntityData().removeTag("VinyarionAddon_Flag");
 		AddonHooks.lastLeft.remove();
@@ -980,6 +1000,16 @@ public class Siege
 		// TODO : Vinyarion's addon start
 		nbt.setInteger("VinyarionAddon_Mode", mode.ordinal());
 		mode.toNBT(this, nbt);
+		NBTTagList shadowPlayerTags = new NBTTagList();
+		for (Entry<UUID, SiegePlayerData> e : shadowPlayerDataMap.entrySet()) {
+			UUID playerID = e.getKey();
+			SiegePlayerData player = e.getValue();
+			NBTTagCompound playerData = new NBTTagCompound();
+			playerData.setString("VinyarionAddon_ShadowPlayerID", playerID.toString());
+			player.writeToNBT(playerData);
+			playerTags.appendTag(playerData);
+		}
+		nbt.setTag("VinyarionAddon_ShadowPlayerData", shadowPlayerTags);
 		// Addon end
 	}
 	
@@ -1044,6 +1074,23 @@ public class Siege
 		// TODO : Vinyarion's addon start
 		mode = Mode.of(nbt.getInteger("VinyarionAddon_Mode")).setSiege(this);
 		mode.fromNBT(this, nbt);
+		if (nbt.hasKey("VinyarionAddon_ShadowPlayerData")) {
+			NBTTagList playerTags = nbt.getTagList("VinyarionAddon_ShadowPlayerData", Constants.NBT.TAG_COMPOUND);
+			for (int i = 0; i < playerTags.tagCount(); i++) {
+				NBTTagCompound playerData = playerTags.getCompoundTagAt(i);
+				UUID playerID = UUID.fromString(playerData.getString("VinyarionAddon_ShadowPlayerID"));
+				if (playerID != null) {
+					SiegePlayerData map = playerDataMap.get(playerID);
+					if(map != null) {
+						shadowPlayerDataMap.put(playerID, map);
+						continue;
+					}
+					SiegePlayerData player = new SiegePlayerData(this);
+					player.readFromNBT(playerData);
+					shadowPlayerDataMap.put(playerID, player);
+				}
+			}
+		}
 		// Addon end
 	}
 	
@@ -1055,6 +1102,7 @@ public class Siege
 	public World world() {
 		return MinecraftServer.getServer().worldServerForDimension(dimension);
 	}
+	public Map<UUID, SiegePlayerData> shadowPlayerDataMap = new HashMap();
 	// Addon end
 	
 }

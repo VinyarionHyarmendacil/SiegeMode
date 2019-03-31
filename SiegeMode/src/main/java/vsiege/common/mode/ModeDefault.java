@@ -2,6 +2,7 @@ package vsiege.common.mode;
 
 import net.minecraft.command.CommandException;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.world.World;
 import siege.common.siege.Siege;
 import siege.common.siege.SiegeTeam;
@@ -18,7 +19,7 @@ public class ModeDefault extends Mode {
 	}
 
 	public String score(World world, Siege siege, SiegeTeam team) {
-		return team.color + team.getTeamName() + ": Kills: " + team.getTeamKills();
+		return team.color + team.getTeamName() + EnumChatFormatting.GOLD + ": Kills: " + team.getTeamKills();
 	}
 
 	protected void fromNBT0(Siege siege, NBTTagCompound nbt) {

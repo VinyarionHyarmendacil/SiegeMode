@@ -22,6 +22,7 @@ import net.minecraftforge.event.world.BlockEvent;
 import siege.common.kit.Kit;
 import siege.common.kit.KitDatabase;
 import siege.common.siege.*;
+import vsiege.common.addon.AddonHooks;
 import cpw.mods.fml.common.eventhandler.Event.Result;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
@@ -108,7 +109,12 @@ public class EventHandler
 				activeSiege.onPlayerLogin((EntityPlayerMP)entityplayer);
 			}
 			// TODO : Vinyarion's addon start
-			vsiege.common.addon.AddonHooks.playerLogsIn(entityplayer, activeSiege);
+			AddonHooks.playerLogsInActive(entityplayer, activeSiege);
+			if(activeSiege == null) {
+				for(SiegePlayerData data : SiegeDatabase.removeStale(entityplayer)) {
+					AddonHooks.playerLogsInInactive(entityplayer, data.addonData.siege, data);
+				}
+			}
 			// Addon end
 		}
 	}

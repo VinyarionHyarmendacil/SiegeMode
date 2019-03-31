@@ -2,10 +2,13 @@ package vsiege.common.addon;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.UUID;
 
 import cpw.mods.fml.relauncher.ReflectionHelper;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.WorldServer;
 import siege.common.kit.Kit;
 import siege.common.siege.BackupSpawnPoint;
 import siege.common.siege.Siege;
@@ -29,22 +32,31 @@ public class AddonHooks {
 
 	public static void playerLeavesSiege(EntityPlayerMP player, Siege siege, SiegeTeam team) {
 		if(siege == null) return;
+		AddonPlayerData pd = siege.getPlayerData(player).addonData;
 		lastLeft.set(siege.getPlayerData(player));
 		siege.mode.ruleHandler.playerLeave(siege, player);
+		pd.isSiegeActive = false;
 	}
 
-	public static void playerLogsIn(EntityPlayer player, Siege siege) {
+	public static void playerLogsInActive(EntityPlayer player, Siege siege) {
 		if(siege == null) return;
-		AddonPlayerData pd = siege.getPlayerData(player).addonData;
-		if(!siege.isActive() || siege.isDeleted()) {
-			siege.leavePlayer((EntityPlayerMP)player, false);
-		}
-		if(pd.isSiegeActive) {
-			pd.isSiegeActive = false;
-			player.travelToDimension(pd.joinedSiegeDim);
-			player.setPositionAndUpdate(pd.joinedSiegePos[0], pd.joinedSiegePos[1], pd.joinedSiegePos[2]);
-		}
 		siege.mode.ruleHandler.playerLogin(siege, player);
+	}
+
+	public static void playerLogsInInactive(EntityPlayer player, Siege siege, SiegePlayerData old) {
+		if(siege == null) return;
+		if(!siege.isActive() || siege.isDeleted()) {
+			old.updateSiegeScoreboard((EntityPlayerMP)player, false);
+			lastLeft.set(old);
+			BackupSpawnPoint bsp = old.getBackupSpawnPoint();
+			if (bsp != null) {
+				player.setSpawnChunk(bsp.spawnCoords, bsp.spawnForced, bsp.dimension);
+			}
+			Kit.clearPlayerInvAndKit(player);
+			if (siege.getDispelEnd()) {
+				Siege.dispel(player);
+			}
+		}
 	}
 
 	public static void playerLogsOut(EntityPlayer player, Siege siege) {

@@ -41,6 +41,8 @@ public class ZoneFlag extends Zone {
 
 	private void captureFlag(ModeCTF mode, EntityPlayer player, SiegeTeam winner, SiegeTeam loser) {
 		AddonHooks.messageAllSiegePlayers(siege, winner.color + winner.getTeamName() + GOLD + " has captured the flag of " + loser.color + loser.getTeamName() + GOLD + "!");
+		int left = mode.pointsNeededToWin - winner.score;
+		if(left > 0) AddonHooks.messageAllSiegePlayers(siege, winner.color + winner.getTeamName() + GOLD + " needs " + left + " more flags!");
 		player.getEntityData().removeTag("VinyarionAddon_Flag");
 		mode.owners.get(loser).hasFlag = true;
 		winner.score++;

@@ -279,6 +279,7 @@ public class SiegeTeam
 	public Siege getSiege() {
 		return this.theSiege;
 	}
+	public List<UUID> shadowTeamPlayers = new ArrayList();
 	// Addon end
 	
 	public String getSiegeOngoingScore()
@@ -370,6 +371,16 @@ public class SiegeTeam
 		// TODO : Vinyarion's addon start
 		nbt.setInteger("VinyarionAddon_Score", score);
 		nbt.setInteger("VinyarionAddon_Color", color.ordinal());
+		for (UUID player : teamPlayers) {
+			if(!shadowTeamPlayers.contains(player)) {
+				shadowTeamPlayers.add(player);
+			}
+		}
+		NBTTagList shadowPlayerTags = new NBTTagList();
+		for (UUID player : shadowTeamPlayers) {
+			shadowPlayerTags.appendTag(new NBTTagString(player.toString()));
+		}
+		nbt.setTag("VinyarionAddon_ShadowPlayers", shadowPlayerTags);
 		// Addon end
 	}
 	
@@ -436,6 +447,15 @@ public class SiegeTeam
 		score = nbt.getInteger("VinyarionAddon_Score");
 		int c = nbt.getInteger("VinyarionAddon_Color");
 		color = EnumChatFormatting.values()[c < EnumChatFormatting.values().length ? c >= 0 ? c : 0 : 0];
+		if (nbt.hasKey("VinyarionAddon_ShadowPlayers")) {
+			NBTTagList playerTags = nbt.getTagList("VinyarionAddon_ShadowPlayers", Constants.NBT.TAG_STRING);
+			for (int i = 0; i < playerTags.tagCount(); i++) {
+				UUID player = UUID.fromString(playerTags.getStringTagAt(i));
+				if (player != null) {
+					shadowTeamPlayers.add(player);
+				}
+			}
+		}
 		// Addon end
 	}
 }

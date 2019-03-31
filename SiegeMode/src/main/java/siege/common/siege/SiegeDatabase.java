@@ -116,11 +116,27 @@ public class SiegeDatabase
 	public static List<Siege> getSiegesForPlayer(EntityPlayer player) {
 		List<Siege> sieges = new ArrayList();
 		for (Siege siege : siegeMap.values()) {
-			if (siege.hasPlayer(player)) {
-				sieges.add(siege);
+			for (SiegeTeam team : siege.teams()) {
+				if (team.shadowTeamPlayers.contains(player.getUniqueID())) {
+					sieges.add(siege);
+				}
 			}
 		}
 		return sieges;
+	}
+	public static List<SiegePlayerData> removeStale(EntityPlayer player) {
+		List<SiegePlayerData> datas = new ArrayList();
+		for (Siege siege : siegeMap.values()) {
+			for (SiegeTeam team : siege.teams()) {
+				if (team.shadowTeamPlayers.contains(player.getUniqueID())) {
+					team.shadowTeamPlayers.remove(player.getUniqueID());
+				}
+			}
+			if(siege.shadowPlayerDataMap.containsKey(player.getUniqueID())) {
+				datas.add(siege.shadowPlayerDataMap.remove(player.getUniqueID()));
+			}
+		}
+		return datas;
 	}
 	public static Collection<Siege> getAllSieges() {
 		return ImmutableList.copyOf(siegeMap.values());
