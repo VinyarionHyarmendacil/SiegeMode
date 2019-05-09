@@ -19,7 +19,7 @@ import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
 
-@Mod(modid = "siegemode", version = "V.1.8", acceptableRemoteVersions = "*")
+@Mod(modid = "siegemode", version = "V.1.9", acceptableRemoteVersions = "*")
 public class SiegeMode
 {
 	// TODO : modid

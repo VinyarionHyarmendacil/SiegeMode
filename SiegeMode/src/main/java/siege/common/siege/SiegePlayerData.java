@@ -1,14 +1,18 @@
 package siege.common.siege;
 
 import java.util.*;
+import java.util.Map.Entry;
 
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
 import net.minecraft.network.Packet;
 import net.minecraft.network.play.server.*;
 import net.minecraft.scoreboard.*;
 import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.world.World;
+import net.minecraftforge.common.util.Constants;
 import siege.common.kit.Kit;
 import siege.common.kit.KitDatabase;
 import vsiege.common.addon.AddonPlayerData;
@@ -27,6 +31,10 @@ public class SiegePlayerData
 	private int deaths;
 	private int killstreak;
 	private int longestKillstreak;
+	private UUID lastKilledBy;
+	private UUID lastKill;
+	private Map<String, Integer> killedByTable = new HashMap();
+	private Map<String, Integer> killTable = new HashMap();
 	
 	private ScoreObjective lastSentSiegeObjective = null;
 	// TODO : Vinyarion's Addon start
@@ -74,6 +82,39 @@ public class SiegePlayerData
 		// TODO : Vinyarion's Addon start
 		addonData.toNBT(nbt);
 		// Addon end
+		
+		if (lastKilledBy != null)
+		{
+			nbt.setString("LastKilledBy", lastKilledBy.toString());
+		}
+		if (lastKill != null)
+		{
+			nbt.setString("LastKill", lastKill.toString());
+		}
+		
+		NBTTagList killedByTags = new NBTTagList();
+		for (Entry<String, Integer> e : killedByTable.entrySet())
+		{
+			String name = e.getKey();
+			int count = e.getValue();
+			NBTTagCompound data = new NBTTagCompound();
+			data.setString("Name", name);
+			data.setInteger("Count", count);
+			killedByTags.appendTag(data);
+		}
+		nbt.setTag("KilledByTable", killedByTags);
+		
+		NBTTagList killTags = new NBTTagList();
+		for (Entry<String, Integer> e : killTable.entrySet())
+		{
+			String name = e.getKey();
+			int count = e.getValue();
+			NBTTagCompound data = new NBTTagCompound();
+			data.setString("Name", name);
+			data.setInteger("Count", count);
+			killTags.appendTag(data);
+		}
+		nbt.setTag("KillTable", killTags);
 	}
 	
 	public void readFromNBT(NBTTagCompound nbt)
@@ -111,6 +152,43 @@ public class SiegePlayerData
 		// TODO : Vinyarion's Addon start
 		addonData.fromNBT(nbt);
 		// Addon end
+		
+		lastKilledBy = null;
+		if (nbt.hasKey("LastKilledBy"))
+		{
+			lastKilledBy = UUID.fromString(nbt.getString("LastKilledBy"));
+		}
+		lastKill = null;
+		if (nbt.hasKey("LastKill"))
+		{
+			lastKill = UUID.fromString(nbt.getString("LastKill"));
+		}
+		
+		killedByTable.clear();
+		NBTTagList killedByTags = nbt.getTagList("KilledByTable", Constants.NBT.TAG_COMPOUND);
+		for (int i = 0; i < killedByTags.tagCount(); i++)
+		{
+			NBTTagCompound data = killedByTags.getCompoundTagAt(i);
+			String name = data.getString("Name");
+			int count = data.getInteger("Count");
+			if (count > 0)
+			{
+				killedByTable.put(name, count);
+			}
+		}
+		
+		killTable.clear();
+		NBTTagList killTags = nbt.getTagList("KillTable", Constants.NBT.TAG_COMPOUND);
+		for (int i = 0; i < killTags.tagCount(); i++)
+		{
+			NBTTagCompound data = killTags.getCompoundTagAt(i);
+			String name = data.getString("Name");
+			int count = data.getInteger("Count");
+			if (count > 0)
+			{
+				killTable.put(name, count);
+			}
+		}
 	}
 	
 	public BackupSpawnPoint getBackupSpawnPoint()
@@ -167,7 +245,7 @@ public class SiegePlayerData
 		return kills;
 	}
 	
-	public void onKill()
+	public void onKill(EntityPlayer entityplayer)
 	{
 		kills++;
 		killstreak++;
@@ -175,6 +253,14 @@ public class SiegePlayerData
 		{
 			longestKillstreak = killstreak;
 		}
+		
+		lastKill = entityplayer.getUniqueID();
+		
+		String name = entityplayer.getCommandSenderName();
+		int tableCount = killTable.containsKey(name) ? killTable.get(name) : 0;
+		tableCount++;
+		killTable.put(name, tableCount);
+		
 		theSiege.markDirty();
 	}
 	
@@ -183,10 +269,26 @@ public class SiegePlayerData
 		return deaths;
 	}
 	
-	public void onDeath()
+	public void onDeath(EntityPlayer entityplayer)
 	{
 		deaths++;
 		killstreak = 0;
+		lastKill = null;
+		
+		if (entityplayer == null)
+		{
+			lastKilledBy = null;
+		}
+		else
+		{
+			lastKilledBy = entityplayer.getUniqueID();
+			
+			String name = entityplayer.getCommandSenderName();
+			int tableCount = killedByTable.containsKey(name) ? killedByTable.get(name) : 0;
+			tableCount++;
+			killedByTable.put(name, tableCount);
+		}
+
 		theSiege.markDirty();
 	}
 	
@@ -206,7 +308,91 @@ public class SiegePlayerData
 		deaths = 0;
 		killstreak = 0;
 		longestKillstreak = 0;
+		lastKilledBy = null;
+		lastKill = null;
+		killTable.clear();
+		killedByTable.clear();
 		theSiege.markDirty();
+	}
+	
+	public UUID getLastKilledBy()
+	{
+		return lastKilledBy;
+	}
+	
+	public UUID getLastKill()
+	{
+		return lastKill;
+	}
+	
+	public String getMostKilledBy()
+	{
+		String mostName = null;
+		int most = 0;
+		boolean dupe = false;
+		for (Entry<String, Integer> e : killedByTable.entrySet())
+		{
+			String name = e.getKey();
+			int count = e.getValue();
+			if (count > 0)
+			{
+				if (count == most)
+				{
+					mostName = name;
+					dupe = true;
+				}
+				else if (count > most)
+				{
+					mostName = name;
+					most = count;
+					dupe = false;
+				}
+			}
+		}
+		
+		if (dupe)
+		{
+			return null;
+		}
+		else
+		{
+			return mostName;
+		}
+	}
+	
+	public String getMostKilled()
+	{
+		String mostName = null;
+		int most = 0;
+		boolean dupe = false;
+		for (Entry<String, Integer> e : killTable.entrySet())
+		{
+			String name = e.getKey();
+			int count = e.getValue();
+			if (count > 0)
+			{
+				if (count == most)
+				{
+					mostName = name;
+					dupe = true;
+				}
+				else if (count > most)
+				{
+					mostName = name;
+					most = count;
+					dupe = false;
+				}
+			}
+		}
+		
+		if (dupe)
+		{
+			return null;
+		}
+		else
+		{
+			return mostName;
+		}
 	}
 	
 	public void onLogin(EntityPlayerMP entityplayer)
@@ -214,8 +400,8 @@ public class SiegePlayerData
 		if (clearedLimitedKit)
 		{
 			clearedLimitedKit = false;
-			theSiege.messagePlayer(entityplayer, "Your limited kit was deselected on logout so others may use it!");
-			theSiege.messagePlayer(entityplayer, "Switching to random kit selection after death");
+			theSiege.warnPlayer(entityplayer, "Your limited kit was deselected on logout so others may use it!");
+			theSiege.warnPlayer(entityplayer, "Switching to random kit selection after death");
 			theSiege.markDirty();
 		}
 	}

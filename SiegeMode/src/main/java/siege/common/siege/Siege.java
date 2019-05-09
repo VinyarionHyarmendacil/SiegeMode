@@ -372,7 +372,7 @@ public class Siege
 	{
 		ticksRemaining = 0;
 
-		messageAllSiegePlayers("The siege has ended!");
+		announceToAllPlayers("The siege has ended!");
 		
 		List<SiegeTeam> winningTeams = new ArrayList();
 		int winningScore = -1;
@@ -417,23 +417,23 @@ public class Siege
 		/* TODO : Vinyarion's Addon replace start
 		if (winningTeams.size() == 1)
 		{
-			messageAllSiegePlayers("Team " + winningTeamName + " won with " + winningScore + " kills!");
+			announceToAllPlayers("Team " + winningTeamName + " won with " + winningScore + " kills!");
 		}
 		else
 		{
-			messageAllSiegePlayers("Teams " + winningTeamName + " tied with " + winningScore + " kills each!");
+			announceToAllPlayers("Teams " + winningTeamName + " tied with " + winningScore + " kills each!");
 		}
 		*/
 		boolean plural = winningTeams.size() != 1;
-		messageAllSiegePlayers((plural ? "Teams " : "Team ") + winningTeamName + EnumChatFormatting.RED + (plural ? " tied with " : " won with ") + winningScore + " " + mode.object(this, winningScore != 1) + (plural ? " each!" : "!"));
+		announceToAllPlayers((plural ? "Teams " : "Team ") + winningTeamName + EnumChatFormatting.RED + (plural ? " tied with " : " won with ") + winningScore + " " + mode.object(this, winningScore != 1) + (plural ? " each!" : "!"));
 		// Addon end
-		messageAllSiegePlayers("---");
+		announceToAllPlayers("---");
 		for (SiegeTeam team : siegeTeams)
 		{
 			String teamMsg = team.getSiegeEndMessage();
-			messageAllSiegePlayers(teamMsg);
+			announceToAllPlayers(teamMsg);
 		}
-		messageAllSiegePlayers("---");
+		announceToAllPlayers("---");
 		// TODO : Vinyarion's addon start
 		if(mode instanceof ModeDefault) {
 		// Addon end
@@ -471,24 +471,60 @@ public class Siege
 		if (mvpID != null)
 		{
 			String mvp = UsernameCache.getLastKnownUsername(mvpID);
-			messageAllSiegePlayers("MVP was " + mvp + " (" + getPlayerTeam(mvpID).getTeamName() + ") with " + mvpKills + " kills / " + mvpDeaths + " deaths");
+			announceToAllPlayers("MVP was " + mvp + " (" + getPlayerTeam(mvpID).getTeamName() + ") with " + mvpKills + " kills / " + mvpDeaths + " deaths");
 		}
 		if (longestKillstreakID != null)
 		{
 			String streakPlayer = UsernameCache.getLastKnownUsername(longestKillstreakID);
-			messageAllSiegePlayers("Longest killstreak was " + streakPlayer + " (" + getPlayerTeam(longestKillstreakID).getTeamName() + ") with a killstreak of " + longestKillstreak);
+			announceToAllPlayers("Longest killstreak was " + streakPlayer + " (" + getPlayerTeam(longestKillstreakID).getTeamName() + ") with a killstreak of " + longestKillstreak);
 		}
 		// TODO : Vinyarion's addon start
 		} else {
 			mode.printMVP(this, siegeTeams);
 		}
 		// Addon end
-		messageAllSiegePlayers("---");
+		announceToAllPlayers("---");
 		// TODO : Vinyarion's Addon start
-		// messageAllSiegePlayers("Congratulations to " + winningTeamName + ", and well played by all!");
-		messageAllSiegePlayers("Congratulations to " + winningTeamName + EnumChatFormatting.RED + ", and well played by all!");
+		// announceToAllPlayers("Congratulations to " + winningTeamName + ", and well played by all!");
+		announceToAllPlayers("Congratulations to " + winningTeamName + EnumChatFormatting.RED + ", and well played by all!");
 		// Addon end
 		List playerList = MinecraftServer.getServer().getConfigurationManager().playerEntityList;
+		for (Object player : playerList)
+		{
+			EntityPlayerMP entityplayer = (EntityPlayerMP)player;
+			if (hasPlayer(entityplayer))
+			{
+				SiegePlayerData playerData = getPlayerData(entityplayer);
+				
+				boolean flag = false;
+				
+				String mostKilled = playerData.getMostKilled();
+				String mostKilledBy = playerData.getMostKilledBy();
+				if (mostKilled != null)
+				{
+					announcePlayer(entityplayer, "You slew " + mostKilled + " most");
+					flag = true;
+				}
+				if (mostKilledBy != null)
+				{
+					announcePlayer(entityplayer, "You were slain most by " + mostKilledBy);
+					flag = true;
+				}
+				if (mostKilled != null && mostKilled.equals(mostKilledBy))
+				{
+					announcePlayer(entityplayer, "Your nemesis was " + mostKilled + "...");
+					flag = true;
+				}
+				
+				if (flag)
+				{
+					announcePlayer(entityplayer, "---");
+				}
+			}
+		}
+		
+		announceToAllPlayers("Congratulations to " + winningTeamName + ", and well played by all!");
+		
 		for (Object player : playerList)
 		{
 			EntityPlayerMP entityplayer = (EntityPlayerMP)player;
@@ -576,7 +612,7 @@ public class Siege
 					
 					for (SiegeTeam team : teamsSorted)
 					{
-						messageAllSiegePlayers(team.getSiegeOngoingScore());
+						warnAllPlayers(team.getSiegeOngoingScore());
 					}
 				}
 			}
@@ -604,8 +640,8 @@ public class Siege
 		
 		if (hasAnyItems)
 		{
-			messagePlayer(entityplayer, "Your inventory must be clear before joining the siege!");
-			messagePlayer(entityplayer, "Put your items somewhere safe");
+			warnPlayer(entityplayer, "Your inventory must be clear before joining the siege!");
+			warnPlayer(entityplayer, "Put your items somewhere safe");
 			return false;
 		}
 		else
@@ -654,9 +690,14 @@ public class Siege
 		}
 	}
 	
-	public static void messagePlayer(EntityPlayer entityplayer, String text)
+	public static void warnPlayer(EntityPlayer entityplayer, String text)
 	{
 		messagePlayer(entityplayer, text, EnumChatFormatting.RED);
+	}
+	
+	private void announcePlayer(EntityPlayer entityplayer, String text)
+	{
+		messagePlayer(entityplayer, text, EnumChatFormatting.GOLD);
 	}
 	
 	public static void messagePlayer(EntityPlayer entityplayer, String text, EnumChatFormatting color)
@@ -666,7 +707,12 @@ public class Siege
 		entityplayer.addChatMessage(message);
 	}
 	
-	private void messageAllSiegePlayers(String text)
+	private void announceToAllPlayers(String text)
+	{
+		messageAllPlayers(text, EnumChatFormatting.GOLD, true);
+	}
+	
+	private void warnAllPlayers(String text)
 	{
 		messageAllPlayers(text, EnumChatFormatting.RED, true);
 	}
@@ -688,7 +734,7 @@ public class Siege
 	{
 		String name = getSiegeName();
 		String joinMsg = "To join the active siege " + name + ", put your items somewhere safe, then do /siege_play join " + name + " [use TAB key to choose team and kit]";
-		messageAllPlayers(joinMsg, EnumChatFormatting.GOLD, false);
+		messageAllPlayers(joinMsg, EnumChatFormatting.YELLOW, false);
 	}
 	
 	private void updatePlayer(EntityPlayerMP entityplayer, boolean inSiege)
@@ -714,7 +760,7 @@ public class Siege
 					int newY = world.getTopSolidOrLiquidBlock(newX, newZ);
 					entityplayer.setPositionAndUpdate(newX + 0.5D, newY + 0.5D, newZ + 0.5D);
 					
-					messagePlayer(entityplayer, "Stay inside the siege area!");
+					warnPlayer(entityplayer, "Stay inside the siege area!");
 				}
 				
 				FMLInterModComms.sendRuntimeMessage(SiegeMode.instance, "lotr", "SIEGE_ACTIVE", entityplayer.getCommandSenderName());
@@ -729,7 +775,7 @@ public class Siege
 					int newY = world.getTopSolidOrLiquidBlock(newX, newZ);
 					entityplayer.setPositionAndUpdate(newX + 0.5D, newY + 0.5D, newZ + 0.5D);
 					
-					messagePlayer(entityplayer, "A siege is occurring here - stay out of the area!");
+					warnPlayer(entityplayer, "A siege is occurring here - stay out of the area!");
 				}
 			}
 		}
@@ -741,6 +787,16 @@ public class Siege
 	{
 		if (hasPlayer(entityplayer))
 		{
+			boolean firstBlood = true;
+			for (SiegeTeam aTeam : siegeTeams)
+			{
+				if (aTeam.getTeamKills() > 0)
+				{
+					firstBlood = false;
+					break;
+				}
+			}
+			
 			UUID playerID = entityplayer.getUniqueID();
 			SiegePlayerData playerData = getPlayerData(playerID);
 			SiegeTeam team = getPlayerTeam(entityplayer);
@@ -769,19 +825,51 @@ public class Siege
 					}
 				}
 				
+				// make sure that killer is actually in the siege
+				if (killingPlayer != null && (!hasPlayer(killingPlayer) || killingPlayer.capabilities.isCreativeMode))
+				{
+					killingPlayer = null;
+				}
+				
+				UUID killedLastKill = playerData.getLastKill();
+				
+				playerData.onDeath(killingPlayer);
+				team.addTeamDeath();
+				
 				if (killingPlayer != null)
 				{
-					if (hasPlayer(killingPlayer) && !killingPlayer.capabilities.isCreativeMode)
+					SiegePlayerData killingPlayerData = getPlayerData(killingPlayer);
+					killingPlayerData.onKill(entityplayer);
+					SiegeTeam killingTeam = getPlayerTeam(killingPlayer);
+					killingTeam.addTeamKill();
+					
+					if (firstBlood)
 					{
-						SiegePlayerData killingPlayerData = getPlayerData(killingPlayer);
-						killingPlayerData.onKill();
-						SiegeTeam killingTeam = getPlayerTeam(killingPlayer);
-						killingTeam.addTeamKill();
-						
-						int killstreak = killingPlayerData.getKillstreak();
-						if (killstreak >= KILLSTREAK_ANNOUNCE)
+						announceToAllPlayers(killingPlayer.getCommandSenderName() + " (" + killingTeam.getTeamName() + ") claimed the first kill!");
+					}
+					
+					int killstreak = killingPlayerData.getKillstreak();
+					if (killstreak >= KILLSTREAK_ANNOUNCE)
+					{
+						announceToAllPlayers(killingPlayer.getCommandSenderName() + " (" + killingTeam.getTeamName() + ") has a killstreak of " + killstreak + "!");
+					}
+					
+					if (killedLastKill != null)
+					{
+						SiegePlayerData lastKillData = getPlayerData(killedLastKill);
+						if (lastKillData != null && getPlayerTeam(killedLastKill) == killingTeam)
 						{
-							messageAllSiegePlayers(killingPlayer.getCommandSenderName() + " (" + killingTeam.color + killingTeam.getTeamName() + EnumChatFormatting.RED + ") has a killstreak of " + killstreak + "!");
+							announceToAllPlayers(killingPlayer.getCommandSenderName() + " (" + killingTeam.color + killingTeam.getTeamName() + EnumChatFormatting.RED + ") has a killstreak of " + killstreak + "!");
+							UUID lastKillLastKilledBy = lastKillData.getLastKilledBy();
+							if (lastKillLastKilledBy != null && lastKillLastKilledBy.equals(playerID))
+							{
+								EntityPlayer avengedPlayer = entityplayer.worldObj.func_152378_a(killedLastKill);
+								if (avengedPlayer != null)
+								{
+									announcePlayer(killingPlayer, "You avenged " + avengedPlayer.getCommandSenderName() + "'s death!");
+									announcePlayer(avengedPlayer, killingPlayer.getCommandSenderName() + " avenged your death!");
+								}
+							}
 						}
 					}
 				}
@@ -799,7 +887,7 @@ public class Siege
 					
 					playerData.onTeamChange();
 					
-					messageAllSiegePlayers(entityplayer.getCommandSenderName() + " is now playing on team " + team.getTeamName());
+					warnAllPlayers(entityplayer.getCommandSenderName() + " is now playing on team " + team.getTeamName());
 				}
 				
 				playerData.setNextTeam(null);
@@ -853,7 +941,7 @@ public class Siege
 		if (kit == null || !team.containsKit(kit))
 		{
 			kit = team.getRandomKit(entityplayer.getRNG());
-			messagePlayer(entityplayer, "No kit chosen! Using a random kit: " + kit.getKitName());
+			warnPlayer(entityplayer, "No kit chosen! Using a random kit: " + kit.getKitName());
 		}
 		
 		kit.applyTo(entityplayer);
