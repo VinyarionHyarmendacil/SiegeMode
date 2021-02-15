@@ -22,8 +22,13 @@ import siege.common.siege.SiegePlayerData;
 import siege.common.siege.SiegeTeam;
 import vsiege.common.addon.AddonHooks;
 import vsiege.common.game.ZoneControl;
+import vsiege.common.mode.Mode.ModeType;
 
 public class ModeDomination extends Mode {
+
+	protected ModeType privateModeType() {
+		return ModeType.DOMINATION;
+	}
 
 	public List<ZoneControl> zones = Lists.newArrayList();
 
@@ -118,11 +123,11 @@ public class ModeDomination extends Mode {
 		}
 		if (mvpID != null) {
 			String mvp = UsernameCache.getLastKnownUsername(mvpID);
-			AddonHooks.messageAllSiegePlayers(siege, "MVP was " + mvp + " (" + siege.getPlayerTeam(mvpID).getTeamName() + ") with " + mvpKills + " kills / " + mvpDeaths + " deaths / " + mvpScore + " occupation points");
+			siege.announceToAllPlayers("MVP was " + mvp + " (" + siege.getPlayerTeam(mvpID).getTeamName() + ") with " + mvpKills + " kills / " + mvpDeaths + " deaths / " + mvpScore + " occupation points");
 		}
 		if (longestKillstreakID != null) {
 			String streakPlayer = UsernameCache.getLastKnownUsername(longestKillstreakID);
-			AddonHooks.messageAllSiegePlayers(siege, "Longest killstreak was " + streakPlayer + " (" + siege.getPlayerTeam(longestKillstreakID).getTeamName() + ") with a killstreak of " + longestKillstreak);
+			siege.announceToAllPlayers("Longest killstreak was " + streakPlayer + " (" + siege.getPlayerTeam(longestKillstreakID).getTeamName() + ") with a killstreak of " + longestKillstreak);
 		}
 	}
 	

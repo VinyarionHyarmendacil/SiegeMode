@@ -1,5 +1,6 @@
 package vsiege.common.mode;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -25,32 +26,33 @@ import vsiege.common.rule.RuleHandler;
 public abstract class Mode {
 
 	public static String[] values() {
-		return modeNames.toArray(new String[modeNames.size()]);
+		return Arrays.stream(ModeType.values()).map(type -> type.cmdName).toArray(String[]::new);
 	}
 	public static Mode of(int i) {
-		return modes.get(i).get();
+		return ModeType.values()[i].constructor.get();
 	}
 	public static Mode of(String string) {
-		return of(modeNames.indexOf(string));
+		return ModeType.valueOf(string.replace('-', '_').toUpperCase()).constructor.get();
 	}
-	private static List<String> modeNames = Lists.newArrayList(
-		"deathmatch", 
-		"domination", 
-		"ctf"
-	);
-	private static List<Class<? extends Mode>> classes = Lists.newArrayList(
-		ModeDefault.class, 
-		ModeDomination.class, 
-		ModeCTF.class
-	);
-	private static List<Supplier<Mode>> modes = Lists.<Supplier<Mode>>newArrayList(
-		() -> {return new ModeDefault();}, 
-		() -> {return new ModeDomination();}, 
-		() -> {return new ModeCTF();}
-	);
+
+	public static enum ModeType {
+		DEATHMATCH(ModeDefault::new),
+		DOMINATION(ModeDomination::new),
+		CTF(ModeCTF::new),
+		;
+		private ModeType(Supplier<? extends Mode> constructor) {
+			this.constructor = constructor;
+			this.cmdName = name().toLowerCase().replace('_', '-');
+		}
+		public final Supplier<? extends Mode> constructor;
+		public final String cmdName;
+	}
 
 	public int pointsNeededToWin = 0;
 	protected Siege siege;
+	private final ModeType modeType = privateModeType();
+
+	protected abstract ModeType privateModeType();
 
 	public Mode setSiege(Siege siege) {
 		this.siege = siege;
@@ -102,7 +104,7 @@ public abstract class Mode {
 	}
 	
 	public int ordinal() {
-		return classes.indexOf(this.getClass());
+		return modeType.ordinal();
 	}
 	
 	public void scoreboard(List<Score> list, Scoreboard board, ScoreObjective objective, String timeRemaining, SiegeTeam team, EntityPlayerMP entityplayer, SiegePlayerData playerdata) {}

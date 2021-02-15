@@ -265,4 +265,32 @@ public class Kit
 			}
 		}
 	}
+
+	//Addon start
+	public boolean isSelfSupplied() {
+		return false;
+	}
+	public static final UUID SSUUID = UUID.fromString("ad1d0c38-bdd4-4ad7-a6fe-0076df934bf8");
+	public static final UUID NULLUUID = UUID.fromString("ad1d0c38-bdd4-4ad7-a6fe-0076df934ba8");
+	public static final Kit SELF_SUPPLIED = new Kit() {
+		@Override
+		public boolean isSelfSupplied() {
+			return true;
+		}
+	};
+	public static final Kit NULL = new Kit();
+	static {
+		setupSelfSupplied();
+	}
+	public static void setupSelfSupplied() {
+		SELF_SUPPLIED.kitID = SSUUID;
+		SELF_SUPPLIED.rename("_self_supplied");
+		NULL.kitID = NULLUUID;
+		NULL.rename("_empty");
+		KitDatabase.kitMap.put(SELF_SUPPLIED.kitID, SELF_SUPPLIED);
+		KitDatabase.kitMap.put(NULL.kitID, NULL);
+		KitDatabase.kitNameMap.put(SELF_SUPPLIED.kitName, SELF_SUPPLIED.kitID);
+		KitDatabase.kitNameMap.put(NULL.kitName, NULL.kitID);
+	}
+	//Addon end
 }

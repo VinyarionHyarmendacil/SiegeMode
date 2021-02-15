@@ -98,12 +98,12 @@ public class ZoneControl extends Zone {
 	}
 
 	private void attacked(SiegeTeam team) {
-		AddonHooks.messageAllSiegePlayers(siege, team.color + team.getTeamName() + GOLD + " is attacking " + WHITE + name + GOLD + "!");
+		siege.announceToAllPlayers(team.color + team.getTeamName() + GOLD + " is attacking " + WHITE + name + GOLD + "!");
 		attackers = team;
 	}
 
 	private void occupied(SiegeTeam team) {
-		AddonHooks.messageAllSiegePlayers(siege, team.color + team.getTeamName() + GOLD + " has taken " + WHITE + name + GOLD + "!");
+		siege.announceToAllPlayers(team.color + team.getTeamName() + GOLD + " has taken " + WHITE + name + GOLD + "!");
 		occupiers = team;
 		attackers = null;
 	}

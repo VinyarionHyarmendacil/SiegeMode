@@ -40,9 +40,9 @@ public class ZoneFlag extends Zone {
 	}
 
 	private void captureFlag(ModeCTF mode, EntityPlayer player, SiegeTeam winner, SiegeTeam loser) {
-		AddonHooks.messageAllSiegePlayers(siege, winner.color + winner.getTeamName() + GOLD + " has captured the flag of " + loser.color + loser.getTeamName() + GOLD + "!");
+		siege.announceToAllPlayers(winner.color + winner.getTeamName() + GOLD + " has captured the flag of " + loser.color + loser.getTeamName() + GOLD + "!");
 		int left = mode.pointsNeededToWin - winner.score;
-		if(left > 0) AddonHooks.messageAllSiegePlayers(siege, winner.color + winner.getTeamName() + GOLD + " needs " + left + " more flags!");
+		if(left > 0) siege.announceToAllPlayers(winner.color + winner.getTeamName() + GOLD + " needs " + left + " more flags!");
 		player.getEntityData().removeTag("VinyarionAddon_Flag");
 		mode.owners.get(loser).hasFlag = true;
 		winner.score++;
@@ -56,10 +56,10 @@ public class ZoneFlag extends Zone {
 		player.getEntityData().setString("VinyarionAddon_Flag", owner.getTeamName());
 		if(team != null) {
 			mode.owners.get(team).hasFlag = true;
-			AddonHooks.messageAllSiegePlayers(siege, YELLOW + player.getCommandSenderName() + GOLD + " has dropped the flag of " + team.color + team.getTeamName() + GOLD + "!");
+			siege.announceToAllPlayers(YELLOW + player.getCommandSenderName() + GOLD + " has dropped the flag of " + team.color + team.getTeamName() + GOLD + "!");
 		}
 		hasFlag = false;
-		AddonHooks.messageAllSiegePlayers(siege, YELLOW + player.getCommandSenderName() + GOLD + " has picked up the flag of " + owner.color + owner.getTeamName() + GOLD + "!");
+		siege.announceToAllPlayers(YELLOW + player.getCommandSenderName() + GOLD + " has picked up the flag of " + owner.color + owner.getTeamName() + GOLD + "!");
 		siege.markDirty();
 	}
 
@@ -68,7 +68,7 @@ public class ZoneFlag extends Zone {
 		player.getEntityData().removeTag("VinyarionAddon_Flag");
 		if(team != null) {
 			mode.owners.get(team).hasFlag = true;
-			AddonHooks.messageAllSiegePlayers(siege, YELLOW + player.getCommandSenderName() + GOLD + " has dropped the flag of " + team.color + team.getTeamName() + GOLD + "!");
+			siege.announceToAllPlayers(YELLOW + player.getCommandSenderName() + GOLD + " has dropped the flag of " + team.color + team.getTeamName() + GOLD + "!");
 		}
 		siege.markDirty();
 	}

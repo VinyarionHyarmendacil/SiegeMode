@@ -132,9 +132,6 @@ public class SiegeDatabase
 					team.shadowTeamPlayers.remove(player.getUniqueID());
 				}
 			}
-			if(siege.shadowPlayerDataMap.containsKey(player.getUniqueID())) {
-				datas.add(siege.shadowPlayerDataMap.remove(player.getUniqueID()));
-			}
 		}
 		return datas;
 	}

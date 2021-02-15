@@ -208,9 +208,6 @@ public class Siege
 		{
 			data = new SiegePlayerData(this);
 			playerDataMap.put(player, data);
-			// TODO : Vinyarion's Addon start
-			shadowPlayerDataMap.put(player, data);
-			// Addon end
 		}
 		return data;
 	}
@@ -414,16 +411,7 @@ public class Siege
 				}
 			}
 		}
-		/* TODO : Vinyarion's Addon replace start
-		if (winningTeams.size() == 1)
-		{
-			announceToAllPlayers("Team " + winningTeamName + " won with " + winningScore + " kills!");
-		}
-		else
-		{
-			announceToAllPlayers("Teams " + winningTeamName + " tied with " + winningScore + " kills each!");
-		}
-		*/
+		// TODO : Vinyarion's Addon start
 		boolean plural = winningTeams.size() != 1;
 		announceToAllPlayers((plural ? "Teams " : "Team ") + winningTeamName + EnumChatFormatting.RED + (plural ? " tied with " : " won with ") + winningScore + " " + mode.object(this, winningScore != 1) + (plural ? " each!" : "!"));
 		// Addon end
@@ -485,7 +473,6 @@ public class Siege
 		// Addon end
 		announceToAllPlayers("---");
 		// TODO : Vinyarion's Addon start
-		// announceToAllPlayers("Congratulations to " + winningTeamName + ", and well played by all!");
 		announceToAllPlayers("Congratulations to " + winningTeamName + EnumChatFormatting.RED + ", and well played by all!");
 		// Addon end
 		List playerList = MinecraftServer.getServer().getConfigurationManager().playerEntityList;
@@ -626,6 +613,10 @@ public class Siege
 	
 	public boolean joinPlayer(EntityPlayer entityplayer, SiegeTeam team, Kit kit)
 	{
+		if (kit != null && kit.isSelfSupplied()) {
+			warnPlayer(entityplayer, "Bring-your-own kits are not yet implemented");
+			return false;
+		}
 		boolean hasAnyItems = false;
 		checkForItems:
 		for (int i = 0; i < entityplayer.inventory.getSizeInventory(); i++)
@@ -706,13 +697,15 @@ public class Siege
 		message.getChatStyle().setColor(color);
 		entityplayer.addChatMessage(message);
 	}
-	
-	private void announceToAllPlayers(String text)
+
+	// TODO : Addon increase visibility
+	public void announceToAllPlayers(String text)
 	{
 		messageAllPlayers(text, EnumChatFormatting.GOLD, true);
 	}
-	
-	private void warnAllPlayers(String text)
+
+	// TODO : Addon increase visibility
+	public void warnAllPlayers(String text)
 	{
 		messageAllPlayers(text, EnumChatFormatting.RED, true);
 	}
@@ -803,7 +796,7 @@ public class Siege
 			
 			if (!entityplayer.capabilities.isCreativeMode)
 			{
-				playerData.onDeath();
+				playerData.onDeath(entityplayer);
 				team.addTeamDeath();
 				
 				// TODO : Vinyarion's Addon start
@@ -1088,16 +1081,6 @@ public class Siege
 		// TODO : Vinyarion's addon start
 		nbt.setInteger("VinyarionAddon_Mode", mode.ordinal());
 		mode.toNBT(this, nbt);
-		NBTTagList shadowPlayerTags = new NBTTagList();
-		for (Entry<UUID, SiegePlayerData> e : shadowPlayerDataMap.entrySet()) {
-			UUID playerID = e.getKey();
-			SiegePlayerData player = e.getValue();
-			NBTTagCompound playerData = new NBTTagCompound();
-			playerData.setString("VinyarionAddon_ShadowPlayerID", playerID.toString());
-			player.writeToNBT(playerData);
-			playerTags.appendTag(playerData);
-		}
-		nbt.setTag("VinyarionAddon_ShadowPlayerData", shadowPlayerTags);
 		// Addon end
 	}
 	
@@ -1162,23 +1145,6 @@ public class Siege
 		// TODO : Vinyarion's addon start
 		mode = Mode.of(nbt.getInteger("VinyarionAddon_Mode")).setSiege(this);
 		mode.fromNBT(this, nbt);
-		if (nbt.hasKey("VinyarionAddon_ShadowPlayerData")) {
-			NBTTagList playerTags = nbt.getTagList("VinyarionAddon_ShadowPlayerData", Constants.NBT.TAG_COMPOUND);
-			for (int i = 0; i < playerTags.tagCount(); i++) {
-				NBTTagCompound playerData = playerTags.getCompoundTagAt(i);
-				UUID playerID = UUID.fromString(playerData.getString("VinyarionAddon_ShadowPlayerID"));
-				if (playerID != null) {
-					SiegePlayerData map = playerDataMap.get(playerID);
-					if(map != null) {
-						shadowPlayerDataMap.put(playerID, map);
-						continue;
-					}
-					SiegePlayerData player = new SiegePlayerData(this);
-					player.readFromNBT(playerData);
-					shadowPlayerDataMap.put(playerID, player);
-				}
-			}
-		}
 		// Addon end
 	}
 	
@@ -1190,7 +1156,6 @@ public class Siege
 	public World world() {
 		return MinecraftServer.getServer().worldServerForDimension(dimension);
 	}
-	public Map<UUID, SiegePlayerData> shadowPlayerDataMap = new HashMap();
 	// Addon end
 	
 }

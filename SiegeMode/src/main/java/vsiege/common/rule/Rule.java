@@ -1,5 +1,6 @@
 package vsiege.common.rule;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -18,26 +19,26 @@ import vsiege.common.mode.ModeDomination;
 public abstract class Rule {
 
 	public static String[] values() {
-		return modeNames.toArray(new String[modeNames.size()]);
+		return Arrays.stream(RuleType.values()).map(type -> type.cmdName).toArray(String[]::new);
 	}
 	public static Rule of(int i) {
-		return modes.get(i).get();
+		return RuleType.values()[i].constructor.get();
 	}
 	public static Rule of(String string) {
-		return of(modeNames.indexOf(string));
+		return RuleType.valueOf(string.replace('-', '_').toUpperCase()).constructor.get();
 	}
-	private static List<String> modeNames = Lists.newArrayList(
-		"lives-player", 
-		"lives-team"
-	);
-	private static List<Class<? extends Rule>> classes = Lists.newArrayList(
-		RuleLivesPlayer.class, 
-		RuleLivesTeam.class
-	);
-	private static List<Supplier<Rule>> modes = Lists.<Supplier<Rule>>newArrayList(
-		() -> {return new RuleLivesPlayer();}, 
-		() -> {return new RuleLivesTeam();}
-	);
+
+	public static enum RuleType {
+		LIVES_PLAYER(RuleLivesPlayer::new),
+		LIVES_TEAM(RuleLivesTeam::new),
+		;
+		private RuleType(Supplier<? extends Rule> constructor) {
+			this.constructor = constructor;
+			this.cmdName = name().toLowerCase().replace('_', '-');
+		}
+		public final Supplier<? extends Rule> constructor;
+		public final String cmdName;
+	}
 	
 	public void tick(Siege siege) {}
 	public void playerLogin(Siege siege, EntityPlayer player) {}

@@ -12,8 +12,9 @@ import cpw.mods.fml.common.FMLLog;
 
 public class KitDatabase
 {
-	private static Map<UUID, Kit> kitMap = new HashMap();
-	private static Map<String, UUID> kitNameMap = new HashMap();
+	//Addon: Increased visibility
+	static Map<UUID, Kit> kitMap = new HashMap();
+	static Map<String, UUID> kitNameMap = new HashMap();
 	
 	private static final String randomKitID = "random";
 	
@@ -77,6 +78,7 @@ public class KitDatabase
 	
 	public static void deleteKit(Kit kit)
 	{
+		if (kit == Kit.SELF_SUPPLIED || kit == Kit.NULL) return; // Addon
 		kit.deleteKit();
 		saveKitToFile(kit);
 		kitMap.remove(kit.getKitID());

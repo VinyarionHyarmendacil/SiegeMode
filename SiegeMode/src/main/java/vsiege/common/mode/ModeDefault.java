@@ -7,11 +7,16 @@ import net.minecraft.world.World;
 import siege.common.siege.Siege;
 import siege.common.siege.SiegeTeam;
 import vsiege.common.addon.AddonHooks;
+import vsiege.common.mode.Mode.ModeType;
 
 public class ModeDefault extends Mode {
 	
 	public ModeDefault() {
 		this.pointsNeededToWin = -1;
+	}
+
+	protected ModeType privateModeType() {
+		return ModeType.DEATHMATCH;
 	}
 
 	public boolean tick() {

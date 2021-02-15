@@ -133,7 +133,7 @@ public class EventHandler
 				activeSiege.onPlayerLogout((EntityPlayerMP)entityplayer);
 			}
 			// TODO : Vinyarion's addon start
-			vsiege.common.addon.AddonHooks.playerLogsOut(entityplayer, activeSiege);
+			AddonHooks.playerLogsOut(entityplayer, activeSiege);
 			// Addon end
 		}
 	}

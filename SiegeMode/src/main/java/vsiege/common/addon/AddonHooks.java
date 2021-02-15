@@ -64,16 +64,6 @@ public class AddonHooks {
 		siege.mode.ruleHandler.playerLogout(siege, player);
 	}
 
-	private static final Method masp = ReflectionHelper.findMethod(Siege.class, null, new String[]{"messageAllSiegePlayers"}, String.class);
-	public static void messageAllSiegePlayers(Siege siege, String text) {
-		if(siege == null) return;
-		try {
-			masp.invoke(siege, text);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
 	public static void playerDies(EntityPlayer player, Siege siege, SiegeTeam team) {
 		if(siege == null) return;
 		if(siege.mode instanceof ModeCTF) {

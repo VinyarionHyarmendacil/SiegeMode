@@ -28,6 +28,10 @@ import vsiege.common.game.ZoneFlag;
 
 public class ModeCTF extends Mode {
 
+	protected ModeType privateModeType() {
+		return ModeType.CTF;
+	}
+
 	public List<ZoneFlag> zones = Lists.newArrayList();
 	public Map<SiegeTeam, ZoneFlag> owners = Maps.newHashMap();
 
@@ -118,12 +122,12 @@ public class ModeCTF extends Mode {
 		if (mvpID != null) {
 			String mvp = UsernameCache.getLastKnownUsername(mvpID);
 			SiegeTeam mvpteam = siege.getPlayerTeam(mvpID);
-			AddonHooks.messageAllSiegePlayers(siege, "MVP was " + mvp + " (" + mvpteam.color + mvpteam.getTeamName() + EnumChatFormatting.RED + ") with " + mvpKills + " kills / " + mvpDeaths + " deaths / " + mvpScore + " flag captures");
+			siege.announceToAllPlayers("MVP was " + mvp + " (" + mvpteam.color + mvpteam.getTeamName() + EnumChatFormatting.RED + ") with " + mvpKills + " kills / " + mvpDeaths + " deaths / " + mvpScore + " flag captures");
 		}
 		if (longestKillstreakID != null) {
 			String streakPlayer = UsernameCache.getLastKnownUsername(longestKillstreakID);
 			SiegeTeam ksteam = siege.getPlayerTeam(longestKillstreakID);
-			AddonHooks.messageAllSiegePlayers(siege, "Longest killstreak was " + streakPlayer + " (" + ksteam.color + ksteam.getTeamName() + EnumChatFormatting.RED + ") with a killstreak of " + longestKillstreak);
+			siege.announceToAllPlayers("Longest killstreak was " + streakPlayer + " (" + ksteam.color + ksteam.getTeamName() + EnumChatFormatting.RED + ") with a killstreak of " + longestKillstreak);
 		}
 	}
 	
