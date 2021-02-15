@@ -1,7 +1,8 @@
 V.1.10.3:
 
-+ Two new game modes: Domination and CTF
-+ Team colors
++ Added two new game modes: Domination and CTF
++ Added team colors
++ Added two maximum life rules, one for teams, and one for players
 
 1.2:
 
